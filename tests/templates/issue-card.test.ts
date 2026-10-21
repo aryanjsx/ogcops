@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import issueCard from '@/templates/github/issue-card';
 import { getTemplate } from '@/templates/registry';
 import type { SatoriElement } from '@/templates/types';
+import { isLightColor, mixColors } from '@/templates/utils';
 
 /** Every element in the tree, in order. */
 function elements(node: unknown): SatoriElement[] {
@@ -105,5 +106,21 @@ describe('github-issue-card', () => {
     expect(render({ title: '' })).toContain('Add dark mode to the editor');
     const long = render({ labels: 'a-really-long-label-name-that-keeps-going' });
     expect(long).toContain('a-really-long-label-name-th…');
+  });
+
+  it('shortens a long issue number and comment count', () => {
+    expect(render({ issueNumber: '#12345678901234' })).toContain('#123456789…');
+    expect(render({ comments: '12345678901234567' })).toContain('octocat opened this issue · 12345678901… comments');
+  });
+
+  it('keeps label text readable on light and dark backgrounds', () => {
+    const labelText = (bgColor: string) =>
+      elements(tree({ bgColor, labels: 'docs' })).find((el) => el.props.style?.fontSize === '20px')!.props.style.color;
+    // Dark default: the palette color mixed toward white.
+    expect(labelText('#0d1117')).toBe(mixColors('#7057ff', '#ffffff', 0.45));
+    expect(isLightColor(labelText('#0d1117'))).toBe(true);
+    // Light background: mixed toward black instead, so it stays dark.
+    expect(labelText('#ffffff')).toBe(mixColors('#7057ff', '#000000', 0.45));
+    expect(isLightColor(labelText('#ffffff'))).toBe(false);
   });
 });

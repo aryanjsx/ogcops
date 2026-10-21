@@ -1,5 +1,5 @@
 import type { TemplateDefinition } from '../types';
-import { truncate, autoFontSize, commonFields, mixColors } from '../utils';
+import { truncate, autoFontSize, commonFields, mixColors, isLightColor } from '../utils';
 
 // Label chips take their color from this list by position, so the same
 // labels always come out the same colors.
@@ -53,7 +53,7 @@ const template: TemplateDefinition = {
   },
   render: (params) => {
     const repoName = truncate(String(params.repoName ?? '').trim(), 60);
-    const issueNumber = String(params.issueNumber ?? '').trim().replace(/^#/, '');
+    const issueNumber = truncate(String(params.issueNumber ?? '').trim().replace(/^#/, ''), 10);
     const title = truncate(String(params.title || '').trim() || 'Add dark mode to the editor', 90);
     const status = String(params.status ?? '').trim().toLowerCase() === 'closed' ? STATUS.closed : STATUS.open;
     const labels = String(params.labels ?? '')
@@ -63,7 +63,7 @@ const template: TemplateDefinition = {
       .slice(0, MAX_LABELS)
       .map((label) => truncate(label, 28));
     const author = truncate(String(params.author ?? '').trim(), 39);
-    const comments = String(params.comments ?? '').trim();
+    const comments = truncate(String(params.comments ?? '').trim(), 12);
     const bgColor = String(params.bgColor || '#0d1117');
     const textColor = String(params.textColor || '#e6edf3');
     const accentColor = String(params.accentColor || '#58a6ff');
@@ -214,7 +214,7 @@ const template: TemplateDefinition = {
                       children: {
                         type: 'span',
                         props: {
-                          style: { fontSize: '20px', fontWeight: 500, color: mixColors(color, '#ffffff', 0.45) },
+                          style: { fontSize: '20px', fontWeight: 500, color: mixColors(color, isLightColor(bgColor) ? '#000000' : '#ffffff', 0.45) },
                           children: label,
                         },
                       },
